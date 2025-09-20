@@ -65,8 +65,6 @@ const bookingSchema = new mongoose.Schema({
   },
   rating: {
     type: Number,
-    min: [1, 'Rating must be at least 1'],
-    max: [5, 'Rating cannot exceed 5'],
     default: null
   },
   addOns: [{

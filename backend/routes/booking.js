@@ -4,8 +4,8 @@ import Booking from '../models/booking.js';
 
 const router = express.Router();
 
-// Validation middleware
-const validateBooking = [
+// Validation middleware for creating a booking
+const validateCreateBooking = [
   body('customerName').trim().notEmpty().withMessage('Customer name is required'),
   body('carDetails.make').trim().notEmpty().withMessage('Car make is required'),
   body('carDetails.model').trim().notEmpty().withMessage('Car model is required'),
@@ -20,7 +20,29 @@ const validateBooking = [
     .withMessage('Valid time slot is required'),
   body('status').optional().isIn(['Pending', 'Confirmed', 'Completed', 'Cancelled'])
     .withMessage('Valid status is required'),
-  body('rating').optional().isInt({ min: 1, max: 5 }).withMessage('Rating must be between 1-5'),
+  body('addOns').optional().isArray().withMessage('Add-ons must be an array')
+];
+
+// Validation middleware for updating a booking (includes rating)
+const validateUpdateBooking = [
+  body('customerName').optional().trim().notEmpty().withMessage('Customer name cannot be empty'),
+  body('carDetails.make').optional().trim().notEmpty().withMessage('Car make cannot be empty'),
+  body('carDetails.model').optional().trim().notEmpty().withMessage('Car model cannot be empty'),
+  body('carDetails.year').optional().isInt({ min: 1900, max: new Date().getFullYear() + 1 })
+    .withMessage('Valid car year is required'),
+  body('carDetails.type').optional().isIn(['sedan', 'suv', 'hatchback', 'luxury', 'pickup', 'convertible'])
+    .withMessage('Valid car type is required'),
+  body('serviceType').optional().isIn(['Basic Wash', 'Deluxe Wash', 'Full Detailing'])
+    .withMessage('Valid service type is required'),
+  body('date').optional().isISO8601().withMessage('Valid date is required'),
+  body('timeSlot').optional().isIn(['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'])
+    .withMessage('Valid time slot is required'),
+  body('status').optional().isIn(['Pending', 'Confirmed', 'Completed', 'Cancelled'])
+    .withMessage('Valid status is required'),
+  body('rating')
+    .optional({ nullable: true, checkFalsy: true })
+    .isInt({ min: 1, max: 5 })
+    .withMessage('Rating must be between 1-5 if provided'),
   body('addOns').optional().isArray().withMessage('Add-ons must be an array')
 ];
 
@@ -158,7 +180,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST /api/bookings - Create new booking
-router.post('/', validateBooking, async (req, res) => {
+router.post('/', validateCreateBooking, async (req, res) => {
   try {
     // Check for validation errors
     const errors = validationResult(req);
@@ -203,7 +225,7 @@ router.post('/', validateBooking, async (req, res) => {
 });
 
 // PUT /api/bookings/:id - Update booking
-router.put('/:id', validateBooking, async (req, res) => {
+router.put('/:id', validateUpdateBooking, async (req, res) => {
   try {
     // Check for validation errors
     const errors = validationResult(req);

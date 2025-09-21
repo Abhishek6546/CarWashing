@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { Plus, Filter, AlertCircle, TrendingUp, Calendar, Users, DollarSign, Activity, Sparkles } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Plus, Filter, AlertCircle, TrendingUp, Calendar, Users, DollarSign, Activity, Sparkles ,Menu, X } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { bookingAPI } from '../services/api';
 import BookingCard from '../components/BookingCard';
@@ -35,7 +35,8 @@ const HomePage = () => {
     page: 1,
     limit: 9
   });
-
+  
+   const navigate = useNavigate();
   // Use ref to track if we need to fetch data
   const shouldFetch = useRef(true);
   const lastFiltersRef = useRef(null);
@@ -298,245 +299,223 @@ const HomePage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 right-20 w-72 h-72 bg-blue-200 rounded-full opacity-20 animate-pulse"></div>
-        <div className="absolute bottom-32 left-16 w-48 h-48 bg-indigo-200 rounded-full opacity-20 animate-bounce animation-delay-2000"></div>
-        <div className="absolute top-1/2 right-1/3 w-32 h-32 bg-purple-200 rounded-full opacity-20 animate-pulse animation-delay-4000"></div>
-      </div>
+    {/* Animated Background Elements */}
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      <div className="absolute top-10 sm:top-20 right-10 sm:right-20 w-32 sm:w-48 lg:w-72 h-32 sm:h-48 lg:h-72 bg-blue-200 rounded-full opacity-20 animate-pulse"></div>
+      <div className="absolute bottom-16 sm:bottom-32 left-8 sm:left-16 w-24 sm:w-32 lg:w-48 h-24 sm:h-32 lg:h-48 bg-indigo-200 rounded-full opacity-20 animate-bounce animation-delay-2000"></div>
+      <div className="absolute top-1/2 right-1/4 sm:right-1/3 w-16 sm:w-24 lg:w-32 h-16 sm:h-24 lg:h-32 bg-purple-200 rounded-full opacity-20 animate-pulse animation-delay-4000"></div>
+    </div>
 
-      <div className="relative space-y-8">
-        {/* Enhanced Header */}
-        <div className="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-xl p-8">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-            <div>
-              <div className="flex items-center space-x-3 mb-3">
-                <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg">
-                  <Activity className="h-6 w-6 text-white" />
+    <div className="relative space-y-4 sm:space-y-6 lg:space-y-8 p-4 sm:p-6 lg:p-8">
+      {/* Enhanced Header */}
+      <div className="bg-white/80 backdrop-blur-sm border border-white/20 rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 lg:p-8">
+        <div className="flex flex-col gap-4 sm:gap-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center space-x-2 sm:space-x-3 mb-2 sm:mb-3">
+                <div className="p-2 sm:p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg sm:rounded-xl shadow-lg">
+                  <Activity className="h-4 w-4 sm:h-5 w-5 lg:h-6 lg:w-6 text-white" />
                 </div>
-                <div>
-                  <p className="text-sm text-gray-600">{getGreeting()}</p>
-                  <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-blue-900 bg-clip-text text-transparent">
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm text-gray-600">{getGreeting()}</p>
+                  <h1 className="text-lg sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-blue-900 bg-clip-text text-transparent truncate">
                     Dashboard Overview
                   </h1>
                 </div>
               </div>
-              <p className="text-gray-600 text-lg flex items-center space-x-2">
-                <Sparkles className="h-4 w-4 text-blue-500" />
-                <span>Manage and track all your car wash appointments</span>
+              <p className="text-sm sm:text-base lg:text-lg text-gray-600 flex items-center space-x-2">
+                <Sparkles className="h-3 w-3 sm:h-4 w-4 text-blue-500 flex-shrink-0" />
+                <span className="truncate">Manage and track all your car wash appointments</span>
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Link
-                to="/add-booking"
-                className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-xl font-medium shadow-lg hover:from-blue-700 hover:to-blue-800 transform hover:-translate-y-1 transition-all duration-200 flex items-center space-x-2 justify-center group"
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+              <button
+              onClick={() => navigate('/add-booking')}
+                className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl font-medium shadow-lg hover:from-blue-700 hover:to-blue-800 transform hover:-translate-y-1 transition-all duration-200 flex items-center space-x-2 justify-center group text-sm sm:text-base"
               >
-                <Plus className="h-5 w-5 group-hover:rotate-90 transition-transform duration-200" />
-                <span>New Booking</span>
-              </Link>
+                <Plus className="h-4 w-4 sm:h-5 w-5 group-hover:rotate-90 transition-transform duration-200" />
+                <span className="hidden xs:inline">New Booking</span>
+                <span className="xs:hidden">New</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Enhanced Stats Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+        <div className="sm:col-span-1 lg:col-span-1 bg-white/90 backdrop-blur-sm p-3 sm:p-4 lg:p-6 rounded-lg sm:rounded-xl border border-white/20 shadow-lg hover:shadow-xl transition-all duration-200 hover:-translate-y-1">
+          <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
+            <div className="p-1.5 sm:p-2 bg-gray-100 rounded-md sm:rounded-lg mx-auto sm:mx-0">
+              <Users className="h-3 w-3 sm:h-4 w-4 lg:h-5 lg:w-5 text-gray-600" />
+            </div>
+            <div className="text-center sm:text-left">
+              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">{allStats.total}</div>
+              <div className="text-xs sm:text-sm text-gray-600">Total</div>
             </div>
           </div>
         </div>
 
-        {/* Enhanced Stats Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-          <div className="lg:col-span-1 bg-white/90 backdrop-blur-sm p-6 rounded-xl border border-white/20 shadow-lg hover:shadow-xl transition-all duration-200 hover:-translate-y-1">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-gray-100 rounded-lg">
-                <Users className="h-5 w-5 text-gray-600" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-gray-900">{allStats.total}</div>
-                <div className="text-sm text-gray-600">Total Bookings</div>
-              </div>
+        <div className="sm:col-span-1 lg:col-span-1 bg-white/90 backdrop-blur-sm p-3 sm:p-4 lg:p-6 rounded-lg sm:rounded-xl border border-white/20 shadow-lg hover:shadow-xl transition-all duration-200 hover:-translate-y-1">
+          <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
+            <div className="p-1.5 sm:p-2 bg-yellow-100 rounded-md sm:rounded-lg mx-auto sm:mx-0">
+              <Calendar className="h-3 w-3 sm:h-4 w-4 lg:h-5 lg:w-5 text-yellow-600" />
             </div>
-          </div>
-
-          <div className="lg:col-span-1 bg-white/90 backdrop-blur-sm p-6 rounded-xl border border-white/20 shadow-lg hover:shadow-xl transition-all duration-200 hover:-translate-y-1">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-yellow-100 rounded-lg">
-                <Calendar className="h-5 w-5 text-yellow-600" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-yellow-600">{allStats.pending}</div>
-                <div className="text-sm text-gray-600">Pending</div>
-              </div>
-            </div>
-          </div>
-
-          <div className="lg:col-span-1 bg-white/90 backdrop-blur-sm p-6 rounded-xl border border-white/20 shadow-lg hover:shadow-xl transition-all duration-200 hover:-translate-y-1">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Activity className="h-5 w-5 text-blue-600" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-blue-600">{allStats.confirmed}</div>
-                <div className="text-sm text-gray-600">Confirmed</div>
-              </div>
-            </div>
-          </div>
-
-          <div className="lg:col-span-1 bg-white/90 backdrop-blur-sm p-6 rounded-xl border border-white/20 shadow-lg hover:shadow-xl transition-all duration-200 hover:-translate-y-1">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <TrendingUp className="h-5 w-5 text-green-600" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-green-600">{allStats.completed}</div>
-                <div className="text-sm text-gray-600">Completed</div>
-              </div>
-            </div>
-          </div>
-
-          <div className="lg:col-span-1 bg-gradient-to-r from-emerald-500 to-emerald-600 p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 hover:-translate-y-1">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-white/20 rounded-lg">
-                <DollarSign className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-white">${allStats.revenue}</div>
-                <div className="text-sm text-emerald-100">Total Revenue</div>
-              </div>
+            <div className="text-center sm:text-left">
+              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-yellow-600">{allStats.pending}</div>
+              <div className="text-xs sm:text-sm text-gray-600">Pending</div>
             </div>
           </div>
         </div>
 
-        {/* Enhanced Search and Filter Controls */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-white/20 shadow-lg p-6">
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="flex-1">
-              <SearchBar
-                onSearch={handleSearch}
-                placeholder="Search by customer name, car make, or model..."
-              />
+        <div className="sm:col-span-1 lg:col-span-1 bg-white/90 backdrop-blur-sm p-3 sm:p-4 lg:p-6 rounded-lg sm:rounded-xl border border-white/20 shadow-lg hover:shadow-xl transition-all duration-200 hover:-translate-y-1">
+          <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
+            <div className="p-1.5 sm:p-2 bg-blue-100 rounded-md sm:rounded-lg mx-auto sm:mx-0">
+              <Activity className="h-3 w-3 sm:h-4 w-4 lg:h-5 lg:w-5 text-blue-600" />
             </div>
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 lg:hidden flex items-center space-x-2 ${showFilters
-                  ? 'bg-blue-600 text-white shadow-lg'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-            >
-              <Filter className="h-4 w-4" />
-              <span>Filters</span>
-            </button>
+            <div className="text-center sm:text-left">
+              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-600">{allStats.confirmed}</div>
+              <div className="text-xs sm:text-sm text-gray-600">Confirmed</div>
+            </div>
           </div>
         </div>
 
+        <div className="sm:col-span-1 lg:col-span-1 bg-white/90 backdrop-blur-sm p-3 sm:p-4 lg:p-6 rounded-lg sm:rounded-xl border border-white/20 shadow-lg hover:shadow-xl transition-all duration-200 hover:-translate-y-1">
+          <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
+            <div className="p-1.5 sm:p-2 bg-green-100 rounded-md sm:rounded-lg mx-auto sm:mx-0">
+              <TrendingUp className="h-3 w-3 sm:h-4 w-4 lg:h-5 lg:w-5 text-green-600" />
+            </div>
+            <div className="text-center sm:text-left">
+              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-green-600">{allStats.completed}</div>
+              <div className="text-xs sm:text-sm text-gray-600">Completed</div>
+            </div>
+          </div>
+        </div>
 
+        <div className="col-span-2 sm:col-span-3 lg:col-span-1 bg-gradient-to-r from-emerald-500 to-emerald-600 p-3 sm:p-4 lg:p-6 rounded-lg sm:rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 hover:-translate-y-1">
+          <div className="flex items-center justify-center sm:justify-start space-x-3">
+            <div className="p-1.5 sm:p-2 bg-white/20 rounded-md sm:rounded-lg">
+              <DollarSign className="h-3 w-3 sm:h-4 w-4 lg:h-5 lg:w-5 text-white" />
+            </div>
+            <div className="text-center sm:text-left">
+              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-white">${allStats.revenue}</div>
+              <div className="text-xs sm:text-sm text-emerald-100">Total Revenue</div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-        {/* Main Content */}
-        <div className="flex gap-6  ">
-          {/* Filter Sidebar */}
-          <div className='sticky top-0'>
-            <FilterSidebar
-              filters={filters}
-              onFiltersChange={handleFiltersChange}
-              isOpen={showFilters}
-              onToggle={() => setShowFilters(!showFilters)}
+      {/* Enhanced Search and Filter Controls */}
+      <div className="bg-white/80 backdrop-blur-sm rounded-lg sm:rounded-xl border border-white/20 shadow-lg p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+          <div className="flex-1 min-w-0">
+            <SearchBar
+              onSearch={handleSearch}
+              placeholder="Search by customer name, car make, or model..."
             />
           </div>
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className={`px-3 sm:px-4 py-2 sm:py-3 rounded-lg font-medium transition-all duration-200 lg:hidden flex items-center justify-center space-x-2 text-sm sm:text-base ${showFilters
+                ? 'bg-blue-600 text-white shadow-lg'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+          >
+            <Menu className="h-4 w-4" />
+            <span>Filters</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex gap-0 lg:gap-6">
+        {/* Filter Sidebar */}
+        <FilterSidebar
+          filters={filters}
+          onFiltersChange={handleFiltersChange}
+          isOpen={showFilters}
+          onToggle={() => setShowFilters(!showFilters)}
+        />
+
+        {/* Bookings Grid */}
+        <div className="flex-1 min-w-0">
+          {/* Search Query Display */}
+          {searchQuery && (
+            <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg sm:rounded-xl">
+              <div className="flex items-center space-x-2 sm:space-x-3">
+                <div className="p-1.5 sm:p-2 bg-blue-500 rounded-lg">
+                  <Filter className="h-3 w-3 sm:h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <p className="text-xs sm:text-sm font-medium text-blue-900">Search Results</p>
+                  <p className="text-xs sm:text-sm text-blue-700">
+                    Found <span className="font-semibold">{bookings.length} result{bookings.length !== 1 ? 's' : ''}</span> for "{searchQuery}"
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Error State */}
+          {error && (
+            <div className="bg-white/90 backdrop-blur-sm rounded-lg sm:rounded-xl border border-red-200 shadow-lg p-6 sm:p-8 text-center">
+              <div className="p-3 sm:p-4 bg-red-100 rounded-full inline-flex mb-4 sm:mb-6">
+                <AlertCircle className="h-6 w-6 sm:h-8 w-8 text-red-600" />
+              </div>
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">Something went wrong</h3>
+              <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6 max-w-md mx-auto">{error}</p>
+              <button className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium hover:from-blue-700 hover:to-blue-800 transform hover:-translate-y-0.5 transition-all shadow-lg text-sm sm:text-base">
+                Try Again
+              </button>
+            </div>
+          )}
+
+          {/* Empty State */}
+          {!loading && !error && bookings.length === 0 && (
+            <div className="bg-white/90 backdrop-blur-sm rounded-lg sm:rounded-xl border border-white/20 shadow-lg p-8 sm:p-12 text-center">
+              <div className="text-4xl sm:text-5xl lg:text-6xl mb-4 sm:mb-6">
+                {searchQuery ? '🔍' : '🚗'}
+              </div>
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">
+                {searchQuery ? 'No search results' : 'No bookings found'}
+              </h3>
+              <p className="text-sm sm:text-base text-gray-600 mb-6 sm:mb-8 max-w-md mx-auto leading-relaxed">
+                {searchQuery
+                  ? `We couldn't find any bookings matching "${searchQuery}". Try adjusting your search terms or filters.`
+                  : 'Ready to get started? Create your first car wash booking and begin managing your appointments.'
+                }
+              </p>
+              {!searchQuery && (
+                <button className="inline-flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl font-medium hover:from-blue-700 hover:to-blue-800 transform hover:-translate-y-1 transition-all shadow-lg text-sm sm:text-base">
+                  <Plus className="h-4 w-4 sm:h-5 w-5" />
+                  <span>Create First Booking</span>
+                </button>
+              )}
+            </div>
+          )}
 
           {/* Bookings Grid */}
-          <div className="flex-1 min-w-0">
-            {/* Search Query Display */}
-            {searchQuery && (
-              <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-xl">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-blue-500 rounded-lg">
-                    <Filter className="h-4 w-4 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-blue-900">Search Results</p>
-                    <p className="text-sm text-blue-700">
-                      Found <span className="font-semibold">{bookings.length} result{bookings.length !== 1 ? 's' : ''}</span> for "{searchQuery}"
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Error State */}
-            {error && (
-              <div className="bg-white/90 backdrop-blur-sm rounded-xl border border-red-200 shadow-lg p-8 text-center">
-                <div className="p-4 bg-red-100 rounded-full inline-flex mb-6">
-                  <AlertCircle className="h-8 w-8 text-red-600" />
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">Something went wrong</h3>
-                <p className="text-gray-600 mb-6 max-w-md mx-auto">{error}</p>
-                <button
-                  onClick={() => fetchBookings(filters)}
-                  className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-lg font-medium hover:from-blue-700 hover:to-blue-800 transform hover:-translate-y-0.5 transition-all shadow-lg"
-                >
-                  Try Again
-                </button>
-              </div>
-            )}
-
-            {/* Loading State */}
-            {loading && !error && (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {[...Array(6)].map((_, index) => (
-                  <div key={index} className="bg-white/80 backdrop-blur-sm rounded-xl border border-white/20 shadow-lg p-6 animate-pulse">
-                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-3"></div>
-                    <div className="h-3 bg-gray-200 rounded w-1/2 mb-4"></div>
-                    <div className="space-y-2">
-                      <div className="h-3 bg-gray-200 rounded w-full"></div>
-                      <div className="h-3 bg-gray-200 rounded w-2/3"></div>
-                    </div>
+          {!loading && !error && bookings.length > 0 && (
+            <div className="space-y-4 sm:space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+                {bookings.map((booking, index) => (
+                  <div
+                    key={booking._id}
+                    className="transform transition-all duration-200 hover:-translate-y-1"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
+                    <BookingCard
+                      booking={booking}
+                      onDelete={handleDeleteBooking}
+                    />
                   </div>
                 ))}
               </div>
-            )}
 
-            {/* Empty State */}
-            {!loading && !error && bookings.length === 0 && (
-              <div className="bg-white/90 backdrop-blur-sm rounded-xl border border-white/20 shadow-lg p-12 text-center">
-                <div className="text-6xl mb-6">
-                  {searchQuery ? '🔍' : '🚗'}
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                  {searchQuery ? 'No search results' : 'No bookings found'}
-                </h3>
-                <p className="text-gray-600 mb-8 max-w-md mx-auto leading-relaxed">
-                  {searchQuery
-                    ? `We couldn't find any bookings matching "${searchQuery}". Try adjusting your search terms or filters.`
-                    : 'Ready to get started? Create your first car wash booking and begin managing your appointments.'
-                  }
-                </p>
-                {!searchQuery && (
-                  <Link
-                    to="/add-booking"
-                    className="inline-flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-4 rounded-xl font-medium hover:from-blue-700 hover:to-blue-800 transform hover:-translate-y-1 transition-all shadow-lg"
-                  >
-                    <Plus className="h-5 w-5" />
-                    <span>Create First Booking</span>
-                  </Link>
-                )}
-              </div>
-            )}
-
-            {/* Bookings Grid */}
-            {!loading && !error && bookings.length > 0 && (
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {bookings.map((booking, index) => (
-                    <div
-                      key={booking._id}
-                      className="transform transition-all duration-200 hover:-translate-y-1"
-                      style={{ animationDelay: `${index * 50}ms` }}
-                    >
-                      <BookingCard
-                        booking={booking}
-                        onDelete={handleDeleteBooking}
-                      />
-                    </div>
-                  ))}
-                </div>
-
-                {/* Pagination */}
-                {!searchQuery && pagination.pages > 1 && (
+              {/* Pagination */}
+              {!searchQuery && pagination.pages > 1 && (
+                <div className="mt-6 sm:mt-8">
                   <Pagination
                     currentPage={pagination.current}
                     totalPages={pagination.pages}
@@ -544,50 +523,104 @@ const HomePage = () => {
                     hasPrev={pagination.hasPrev}
                     onPageChange={handlePageChange}
                   />
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Quick Actions Floating Menu */}
-        {!loading && bookings.length > 0 && (
-          <div className="fixed bottom-6 right-6 z-40">
-            <div className="flex flex-col space-y-2">
-              <Link
-                to="/add-booking"
-                className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 rounded-full shadow-lg hover:from-blue-700 hover:to-blue-800 transform hover:-translate-y-1 transition-all group"
-                title="New Booking"
-              >
-                <Plus className="h-6 w-6 group-hover:rotate-90 transition-transform duration-200" />
-              </Link>
+                </div>
+              )}
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
-      <style jsx>{`
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-        .animation-delay-4000 {
-          animation-delay: 4s;
-        }
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .grid > div {
-          animation: fadeInUp 0.6s ease-out forwards;
-        }
-      `}</style>
+      {/* Quick Actions Floating Menu */}
+      {!loading && bookings.length > 0 && (
+        <div className="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 z-40">
+          <div className="flex flex-col space-y-2">
+            <button
+              className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-3 sm:p-4 rounded-full shadow-lg hover:from-blue-700 hover:to-blue-800 transform hover:-translate-y-1 transition-all group"
+              title="New Booking"
+            >
+              <Plus className="h-5 w-5 sm:h-6 w-6 group-hover:rotate-90 transition-transform duration-200" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
+
+    <style jsx>{`
+      .animation-delay-2000 {
+        animation-delay: 2s;
+      }
+      .animation-delay-4000 {
+        animation-delay: 4s;
+      }
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .grid > div {
+        animation: fadeInUp 0.6s ease-out forwards;
+      }
+      
+      /* Custom breakpoint for extra small screens */
+      @media (min-width: 475px) {
+        .xs\:inline {
+          display: inline;
+        }
+        .xs\:hidden {
+          display: none;
+        }
+      }
+      
+      /* Ensure proper spacing on very small screens */
+      @media (max-width: 374px) {
+        .text-lg {
+          font-size: 1rem;
+        }
+        .text-xl {
+          font-size: 1.125rem;
+        }
+        .text-2xl {
+          font-size: 1.25rem;
+        }
+        .p-4 {
+          padding: 0.75rem;
+        }
+        .px-4 {
+          padding-left: 0.75rem;
+          padding-right: 0.75rem;
+        }
+        .py-3 {
+          padding-top: 0.625rem;
+          padding-bottom: 0.625rem;
+        }
+      }
+      
+      /* Smooth scrolling for better UX */
+      html {
+        scroll-behavior: smooth;
+      }
+      
+      /* Custom scrollbar for filter sidebar on mobile */
+      @media (max-width: 1023px) {
+        .overflow-y-auto::-webkit-scrollbar {
+          width: 4px;
+        }
+        .overflow-y-auto::-webkit-scrollbar-track {
+          background: rgba(0, 0, 0, 0.1);
+          border-radius: 2px;
+        }
+        .overflow-y-auto::-webkit-scrollbar-thumb {
+          background: rgba(0, 0, 0, 0.3);
+          border-radius: 2px;
+        }
+      }
+    `}</style>
+  </div>
   );
 };
 

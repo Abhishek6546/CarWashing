@@ -46,10 +46,10 @@ const BookingCard = ({ booking, onDelete }) => {
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">
+          <h3 className="text-lg font-semibold  text-gray-900 mb-1">
             {booking.customerName}
           </h3>
-          <div className="flex items-center space-x-2 text-sm text-gray-600">
+          <div className="flex lg:w-[70%] xl:w-full items-center space-x-2 text-sm text-gray-600">
             <Car className="h-4 w-4 text-primary-500" />
             <span>
               {booking.carDetails.year} {booking.carDetails.make}{" "}
@@ -82,7 +82,7 @@ const BookingCard = ({ booking, onDelete }) => {
       </div>
 
       {/* Details Grid */}
-      <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
+      <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
         <div className="flex items-center space-x-2">
           <Calendar className="h-4 w-4 text-gray-400" />
           <span className="text-gray-600">{formatDate(booking.date)}</span>

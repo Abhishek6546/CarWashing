@@ -70,16 +70,7 @@ const SearchBar = ({ onSearch, placeholder = "Search by customer name or car det
         </div>
       </div>
 
-      {/* Search Status Indicator */}
-      {isSearching && (
-        <div className="absolute top-full left-0 right-0 mt-2 p-3 bg-white/95 backdrop-blur-sm border border-white/20 rounded-lg shadow-lg">
-          <div className="flex items-center space-x-3">
-            <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-200 border-t-blue-600"></div>
-            <span className="text-sm text-gray-700 font-medium">Searching...</span>
-            <Zap className="h-4 w-4 text-yellow-500 animate-pulse" />
-          </div>
-        </div>
-      )}
+    
     </div>
   );
 };

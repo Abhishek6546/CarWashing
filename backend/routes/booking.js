@@ -46,14 +46,14 @@ const validateUpdateBooking = [
   body('addOns').optional().isArray().withMessage('Add-ons must be an array')
 ];
 
-// GET /api/bookings - List all bookings with filtering and pagination
+// List all bookings with filtering and pagination
 router.get('/', async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    // Build filter object
+    
     const filter = {};
     
     if (req.query.serviceType) {
@@ -78,10 +78,10 @@ router.get('/', async (req, res) => {
       }
     }
 
-    // Get total count for pagination
+   
     const total = await Booking.countDocuments(filter);
     
-    // Get bookings with sorting
+    
     const sortBy = req.query.sortBy || 'createdAt';
     const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
     
@@ -111,7 +111,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET /api/bookings/search - Search bookings
+//  Search bookings
 router.get('/search', async (req, res) => {
   try {
     const { q } = req.query;
@@ -147,7 +147,7 @@ router.get('/search', async (req, res) => {
   }
 });
 
-// GET /api/bookings/:id - Get single booking
+// Get single booking
 router.get('/:id', async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id);
@@ -179,10 +179,10 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// POST /api/bookings - Create new booking
+//  Create new booking
 router.post('/', validateCreateBooking, async (req, res) => {
   try {
-    // Check for validation errors
+    
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
@@ -192,7 +192,7 @@ router.post('/', validateCreateBooking, async (req, res) => {
       });
     }
 
-    // Calculate price and duration
+   
     const price = Booking.getServicePrice(req.body.serviceType, req.body.addOns);
     const booking = new Booking({
       ...req.body,
@@ -224,7 +224,7 @@ router.post('/', validateCreateBooking, async (req, res) => {
   }
 });
 
-// PUT /api/bookings/:id - Update booking
+// Update booking
 router.put('/:id', validateUpdateBooking, async (req, res) => {
   try {
     // Check for validation errors
@@ -284,7 +284,7 @@ router.put('/:id', validateUpdateBooking, async (req, res) => {
   }
 });
 
-// DELETE /api/bookings/:id - Delete booking
+// Delete booking
 router.delete('/:id', async (req, res) => {
   try {
     const booking = await Booking.findByIdAndDelete(req.params.id);

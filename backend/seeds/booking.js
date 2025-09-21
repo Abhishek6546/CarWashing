@@ -1,13 +1,11 @@
-import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import Booking from '../models/booking.js';
+import connectDB from '../db.js';
 
 dotenv.config();
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/carwash')
-  .then(() => console.log('MongoDB connected for seeding'))
-  .catch(err => console.error('MongoDB connection error:', err));
+connectDB().then(() => console.log('MongoDB connected for seeding'));
 
 const sampleBookings = [
   {

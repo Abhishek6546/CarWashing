@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Plus, Filter, AlertCircle, TrendingUp, Calendar, Users, DollarSign, Activity, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
@@ -36,31 +36,162 @@ const HomePage = () => {
     limit: 9
   });
 
-  // Fetch bookings with current filters and pagination
-  const fetchBookings = useCallback(async (params = {}) => {
+  // Use ref to track if we need to fetch data
+  const shouldFetch = useRef(true);
+  const lastFiltersRef = useRef(null);
+  // Keep the latest filters in a ref to avoid stale closures in async code
+  const latestFiltersRef = useRef(filters);
+  useEffect(() => {
+    latestFiltersRef.current = filters;
+  }, [filters]);
+
+  // Update stats based on current page data
+  const updateStats = (currentBookings, totalCount) => {
+    setAllStats({
+      total: totalCount,
+      pending: currentBookings.filter(b => b.status === 'Pending').length,
+      confirmed: currentBookings.filter(b => b.status === 'Confirmed').length,
+      completed: currentBookings.filter(b => b.status === 'Completed').length,
+      revenue: currentBookings.reduce((sum, b) => sum + (b.price || 0), 0)
+    });
+  };
+
+  // Fetch all bookings (frontend pagination)
+  const fetchBookings = async (params = {}) => {
     try {
       setLoading(true);
-      setError('');
-      
-      const queryParams = { ...filters, ...params };
-      const response = await bookingAPI.getBookings(queryParams);
-      
-      setBookings(response.data);
-      setPagination(response.pagination);
+      // Merge with the latest filters (not the closed-over value)
+      const merged = { ...latestFiltersRef.current, ...params };
+      const { page: pageParam, limit: limitParam, ...nonPaginationFilters } = merged;
+
+      // We'll fetch all pages from the backend (in case backend enforces pagination)
+      const serverLimit = 100; // batch size per request to accumulate all
+      let page = 1;
+      let all = [];
+      let pagesFromServer = 1;
+      let hasNext = false;
+      let safetyCounter = 0;
+
+      do {
+        const resp = await bookingAPI.getBookings({
+          ...nonPaginationFilters,
+          page,
+          limit: serverLimit,
+        });
+        const chunk = Array.isArray(resp?.data) ? resp.data : [];
+        all = all.concat(chunk);
+        const pag = resp?.pagination || {};
+        pagesFromServer = parseInt(pag.pages) || pagesFromServer;
+        hasNext = Boolean(pag.hasNext) || (pagesFromServer > page);
+        page += 1;
+        safetyCounter += 1;
+       
+        if (!chunk.length) break;
+      } while (hasNext && safetyCounter < 50);
+
+      setAllBookings(all);
+
+      // Use the latest filters at the time the response arrives to decide which page to show (client-side)
+      const latest = latestFiltersRef.current;
+      const uiLimit = parseInt(latest?.limit ?? limitParam) || 9;
+      const requestedPage = parseInt(latest?.page) || 1;
+
+      const totalPages = Math.max(1, Math.ceil(all.length / uiLimit));
+      const current = Math.min(Math.max(1, requestedPage), totalPages);
+
+      // Update pagination
+      setPagination({
+        current,
+        pages: totalPages,
+        total: all.length,
+        hasNext: current < totalPages,
+        hasPrev: current > 1
+      });
+
+      // Update current page slice
+      updateCurrentPageData(current, all, uiLimit);
+
+      // Update stats from all results
+      updateStats(all, all.length);
     } catch (err) {
       setError(err.message || 'Failed to fetch bookings');
       console.error('Fetch error:', err);
     } finally {
       setLoading(false);
     }
-  }, [filters]);
+  };
+
+  // Slice the allBookings for current page
+  const updateCurrentPageData = (page, all, limit = 9) => {
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    setBookings(all.slice(startIndex, endIndex));
+  };
+
+  // Check if filters have actually changed
+  const filtersChanged = (newFilters, oldFilters) => {
+    if (!oldFilters) return true;
+
+    const keys = Object.keys(newFilters);
+    return keys.some(key => newFilters[key] !== oldFilters[key]);
+  };
+
+  // State to store all bookings for client-side pagination
+  const [allBookings, setAllBookings] = useState([]);
+
+  // Main effect for initial load and filter changes
+  useEffect(() => {
+    // Skip search query results
+    if (searchQuery) return;
+
+    // Build clean filters with defaults
+    const cleanFilters = {
+      page: parseInt(filters.page) || 1,
+      limit: parseInt(filters.limit) || 9,
+      sortBy: filters.sortBy || 'createdAt',
+      sortOrder: filters.sortOrder || 'desc',
+      serviceType: filters.serviceType || '',
+      carType: filters.carType || '',
+      status: filters.status || '',
+      dateFrom: filters.dateFrom || '',
+      dateTo: filters.dateTo || ''
+    };
+
+    // Remove pagination from comparison (fetch only when non-page filters change)
+    const { page, limit, ...filtersForComparison } = cleanFilters;
+    const currentFilters = JSON.stringify(filtersForComparison);
+
+    // If only the page changed, just slice the existing data (avoid doing this while data hasn't loaded)
+    if (lastFiltersRef.current === currentFilters) {
+      if (allBookings.length === 0) {
+        // Data still loading; let fetchBookings handle slicing when it finishes
+        return;
+      }
+      const totalPages = Math.max(1, Math.ceil(allBookings.length / cleanFilters.limit));
+      const current = Math.min(Math.max(1, cleanFilters.page), totalPages);
+
+      updateCurrentPageData(current, allBookings, cleanFilters.limit);
+      setPagination({
+        current,
+        pages: totalPages,
+        total: allBookings.length,
+        hasNext: current < totalPages,
+        hasPrev: current > 1
+      });
+      return;
+    }
+
+    // Non-pagination filters changed: fetch all again
+    lastFiltersRef.current = currentFilters;
+    fetchBookings({ page: cleanFilters.page });
+  }, [filters, searchQuery]);
 
   // Search bookings
-  const handleSearch = useCallback(async (query) => {
+  const handleSearch = async (query) => {
     setSearchQuery(query);
-    
+
     if (!query.trim()) {
-      await fetchBookings({ page: 1 });
+      setFilters(prev => ({ ...prev, page: 1 }));
       return;
     }
 
@@ -68,7 +199,7 @@ const HomePage = () => {
       setSearchLoading(true);
       const response = await bookingAPI.searchBookings(query);
       setBookings(response.data);
-      
+
       setPagination({
         current: 1,
         pages: 1,
@@ -76,24 +207,50 @@ const HomePage = () => {
         hasNext: false,
         hasPrev: false
       });
+
+      // Update stats for search results
+      updateStats(response.data, response.data.length);
     } catch (err) {
       toast.error('Search failed');
       console.error('Search error:', err);
     } finally {
       setSearchLoading(false);
     }
-  }, [fetchBookings]);
+  };
 
   // Handle filter changes
   const handleFiltersChange = (newFilters) => {
-    const updatedFilters = { ...newFilters, page: 1 };
-    setFilters(prev => ({ ...prev, ...updatedFilters }));
+    const updatedFilters = { ...filters, ...newFilters, page: 1 };
+    setFilters(updatedFilters);
+
+    // Clear search when filters change
+    if (searchQuery) {
+      setSearchQuery('');
+    }
   };
 
   // Handle pagination
   const handlePageChange = (page) => {
-    setFilters(prev => ({ ...prev, page }));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (searchQuery) {
+      return; // Don't paginate search results
+    }
+
+    const pageNum = parseInt(page);
+
+    // Only update if the page is different
+    if (pageNum !== filters.page) {
+      console.log('Page changed to:', pageNum);
+      console.log('Current filters:', filters);
+
+      // Update filters which will trigger the effect
+      setFilters(prev => ({
+        ...prev,
+        page: pageNum
+      }));
+
+      // Scroll to top
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   // Handle booking deletion
@@ -105,32 +262,32 @@ const HomePage = () => {
     try {
       await bookingAPI.deleteBooking(bookingId);
       toast.success('Booking deleted successfully');
-      
+
       if (searchQuery) {
         await handleSearch(searchQuery);
       } else {
-        await fetchBookings();
+        // Check if we need to go back a page
+        const currentPageBookings = bookings.length;
+        if (currentPageBookings === 1 && pagination.current > 1) {
+          setFilters(prev => ({ ...prev, page: pagination.current - 1 }));
+        } else {
+          // Refresh current page
+          await fetchBookings(filters);
+        }
       }
     } catch (err) {
       toast.error(err.message || 'Failed to delete booking');
     }
   };
 
-  // Initial load and filter changes
-  useEffect(() => {
-    if (!searchQuery) {
-      fetchBookings();
-    }
-  }, [fetchBookings, searchQuery]);
-
-  // Enhanced stats calculation
-  const stats = {
-    total: pagination.total,
-    pending: bookings.filter(b => b.status === 'Pending').length,
-    confirmed: bookings.filter(b => b.status === 'Confirmed').length,
-    completed: bookings.filter(b => b.status === 'Completed').length,
-    revenue: bookings.reduce((sum, b) => sum + (b.price || 0), 0)
-  };
+  // Stats state
+  const [allStats, setAllStats] = useState({
+    total: 0,
+    pending: 0,
+    confirmed: 0,
+    completed: 0,
+    revenue: 0
+  });
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -169,7 +326,7 @@ const HomePage = () => {
                 <span>Manage and track all your car wash appointments</span>
               </p>
             </div>
-            
+
             <div className="flex flex-col sm:flex-row gap-3">
               <Link
                 to="/add-booking"
@@ -190,7 +347,7 @@ const HomePage = () => {
                 <Users className="h-5 w-5 text-gray-600" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
+                <div className="text-2xl font-bold text-gray-900">{allStats.total}</div>
                 <div className="text-sm text-gray-600">Total Bookings</div>
               </div>
             </div>
@@ -202,7 +359,7 @@ const HomePage = () => {
                 <Calendar className="h-5 w-5 text-yellow-600" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
+                <div className="text-2xl font-bold text-yellow-600">{allStats.pending}</div>
                 <div className="text-sm text-gray-600">Pending</div>
               </div>
             </div>
@@ -214,7 +371,7 @@ const HomePage = () => {
                 <Activity className="h-5 w-5 text-blue-600" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-blue-600">{stats.confirmed}</div>
+                <div className="text-2xl font-bold text-blue-600">{allStats.confirmed}</div>
                 <div className="text-sm text-gray-600">Confirmed</div>
               </div>
             </div>
@@ -226,7 +383,7 @@ const HomePage = () => {
                 <TrendingUp className="h-5 w-5 text-green-600" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-green-600">{stats.completed}</div>
+                <div className="text-2xl font-bold text-green-600">{allStats.completed}</div>
                 <div className="text-sm text-gray-600">Completed</div>
               </div>
             </div>
@@ -238,7 +395,7 @@ const HomePage = () => {
                 <DollarSign className="h-5 w-5 text-white" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-white">${stats.revenue}</div>
+                <div className="text-2xl font-bold text-white">${allStats.revenue}</div>
                 <div className="text-sm text-emerald-100">Total Revenue</div>
               </div>
             </div>
@@ -249,18 +406,17 @@ const HomePage = () => {
         <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-white/20 shadow-lg p-6">
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1">
-              <SearchBar 
+              <SearchBar
                 onSearch={handleSearch}
                 placeholder="Search by customer name, car make, or model..."
               />
             </div>
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 lg:hidden flex items-center space-x-2 ${
-                showFilters 
-                  ? 'bg-blue-600 text-white shadow-lg' 
+              className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 lg:hidden flex items-center space-x-2 ${showFilters
+                  ? 'bg-blue-600 text-white shadow-lg'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+                }`}
             >
               <Filter className="h-4 w-4" />
               <span>Filters</span>
@@ -268,15 +424,19 @@ const HomePage = () => {
           </div>
         </div>
 
+
+
         {/* Main Content */}
-        <div className="flex gap-6">
+        <div className="flex gap-6  ">
           {/* Filter Sidebar */}
-          <FilterSidebar
-            filters={filters}
-            onFiltersChange={handleFiltersChange}
-            isOpen={showFilters}
-            onToggle={() => setShowFilters(!showFilters)}
-          />
+          <div className='sticky top-0'>
+            <FilterSidebar
+              filters={filters}
+              onFiltersChange={handleFiltersChange}
+              isOpen={showFilters}
+              onToggle={() => setShowFilters(!showFilters)}
+            />
+          </div>
 
           {/* Bookings Grid */}
           <div className="flex-1 min-w-0">
@@ -306,7 +466,7 @@ const HomePage = () => {
                 <h3 className="text-xl font-semibold text-gray-900 mb-3">Something went wrong</h3>
                 <p className="text-gray-600 mb-6 max-w-md mx-auto">{error}</p>
                 <button
-                  onClick={() => fetchBookings()}
+                  onClick={() => fetchBookings(filters)}
                   className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-lg font-medium hover:from-blue-700 hover:to-blue-800 transform hover:-translate-y-0.5 transition-all shadow-lg"
                 >
                   Try Again
@@ -340,14 +500,14 @@ const HomePage = () => {
                   {searchQuery ? 'No search results' : 'No bookings found'}
                 </h3>
                 <p className="text-gray-600 mb-8 max-w-md mx-auto leading-relaxed">
-                  {searchQuery 
+                  {searchQuery
                     ? `We couldn't find any bookings matching "${searchQuery}". Try adjusting your search terms or filters.`
                     : 'Ready to get started? Create your first car wash booking and begin managing your appointments.'
                   }
                 </p>
                 {!searchQuery && (
-                  <Link 
-                    to="/add-booking" 
+                  <Link
+                    to="/add-booking"
                     className="inline-flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-4 rounded-xl font-medium hover:from-blue-700 hover:to-blue-800 transform hover:-translate-y-1 transition-all shadow-lg"
                   >
                     <Plus className="h-5 w-5" />
@@ -362,8 +522,8 @@ const HomePage = () => {
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                   {bookings.map((booking, index) => (
-                    <div 
-                      key={booking._id} 
+                    <div
+                      key={booking._id}
                       className="transform transition-all duration-200 hover:-translate-y-1"
                       style={{ animationDelay: `${index * 50}ms` }}
                     >

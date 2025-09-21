@@ -47,15 +47,28 @@ api.interceptors.response.use(
 export const bookingAPI = {
   // Get all bookings with filters and pagination
   getBookings: (params = {}) => {
+    // Ensure page is a valid number and at least 1
+    const safeParams = { ...params };
+    if (safeParams.page !== undefined) {
+      safeParams.page = Math.max(1, parseInt(safeParams.page) || 1);
+    }
+
     const queryParams = new URLSearchParams();
     
-    Object.entries(params).forEach(([key, value]) => {
+    // Add default sorting if not provided
+    if (!params.sortBy) {
+      queryParams.set('sortBy', 'createdAt');
+      queryParams.set('sortOrder', 'desc');
+    }
+    
+    Object.entries(safeParams).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== '') {
         queryParams.append(key, value);
       }
     });
     
     const queryString = queryParams.toString();
+    console.log('Making GET request to', `/bookings${queryString ? `?${queryString}` : ''}`);
     return api.get(`/bookings${queryString ? `?${queryString}` : ''}`);
   },
 

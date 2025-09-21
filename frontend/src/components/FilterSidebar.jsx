@@ -1,8 +1,18 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Filter, X, RotateCcw, Car, Calendar, TrendingUp, Package } from 'lucide-react';
 
 const FilterSidebar = ({ filters, onFiltersChange, isOpen, onToggle }) => {
   const [localFilters, setLocalFilters] = useState(filters);
+  
+  // Memoize the sort options to prevent recreation on every render
+  const sortOptions = [
+    { value: 'createdAt', label: 'Newest First', order: 'desc' },
+    { value: 'createdAt', label: 'Oldest First', order: 'asc' },
+    { value: 'price', label: 'Price: Low to High', order: 'asc' },
+    { value: 'price', label: 'Price: High to Low', order: 'desc' },
+    { value: 'date', label: 'Date: Soonest First', order: 'asc' },
+    { value: 'date', label: 'Date: Latest First', order: 'desc' }
+  ];
 
   const serviceTypes = [
     { value: 'Basic Wash', label: 'Basic Wash', price: '$25' },
@@ -24,15 +34,6 @@ const FilterSidebar = ({ filters, onFiltersChange, isOpen, onToggle }) => {
     { value: 'Confirmed', label: 'Confirmed', color: 'bg-blue-100 text-blue-800' },
     { value: 'Completed', label: 'Completed', color: 'bg-green-100 text-green-800' },
     { value: 'Cancelled', label: 'Cancelled', color: 'bg-red-100 text-red-800' },
-  ];
-
-  const sortOptions = [
-    { value: 'createdAt', label: 'Newest First', order: 'desc', icon: Calendar },
-    { value: 'createdAt', label: 'Oldest First', order: 'asc', icon: Calendar },
-    { value: 'price', label: 'Price: Low to High', order: 'asc', icon: TrendingUp },
-    { value: 'price', label: 'Price: High to Low', order: 'desc', icon: TrendingUp },
-    { value: 'date', label: 'Date: Earliest', order: 'asc', icon: Calendar },
-    { value: 'date', label: 'Date: Latest', order: 'desc', icon: Calendar },
   ];
 
   const handleFilterChange = (key, value) => {
@@ -119,7 +120,7 @@ const FilterSidebar = ({ filters, onFiltersChange, isOpen, onToggle }) => {
             </label>
             <div className="relative">
               <select
-                className="w-full px-3 py-2 bg-white/80 border border-gray-200 rounded-md text-sm text-gray-700 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all hover:border-blue-300"
+                className="w-full px-3 pr-8 appearance-none py-2 bg-white/80 border border-gray-200 rounded-md text-sm text-gray-700 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all hover:border-blue-300"
                 value={localFilters.serviceType}
                 onChange={(e) => handleFilterChange('serviceType', e.target.value)}
               >
@@ -221,21 +222,24 @@ const FilterSidebar = ({ filters, onFiltersChange, isOpen, onToggle }) => {
             </label>
             <div className="relative">
               <select
-                className="w-full px-3 py-2 bg-white/80 border border-gray-200 rounded-md text-sm text-gray-700 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 transition-all hover:border-indigo-300"
+                className="w-full px-3 py-2 bg-white/80 border border-gray-200 rounded-md text-sm text-gray-700 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 transition-all hover:border-indigo-300 appearance-none pr-8"
                 value={`${localFilters.sortBy}-${localFilters.sortOrder}`}
                 onChange={(e) => {
                   const [sortBy, sortOrder] = e.target.value.split('-');
                   handleSortChange(sortBy, sortOrder);
                 }}
               >
-                {sortOptions.map((option, index) => (
-                  <option key={index} value={`${option.value}-${option.order}`}>
-                    {option.label}
-                  </option>
-                ))}
+                {sortOptions.map((option, index) => {
+                  const uniqueKey = `${option.value}-${option.order}`;
+                  return (
+                    <option key={uniqueKey} value={uniqueKey}>
+                      {option.label}
+                    </option>
+                  );
+                })}
               </select>
-              <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                <svg className="h-3 w-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </div>

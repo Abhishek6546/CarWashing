@@ -431,12 +431,14 @@ const HomePage = () => {
       {/* Main Content */}
       <div className="flex gap-0 lg:gap-6">
         {/* Filter Sidebar */}
+        <div className='top-0 sticky'>
         <FilterSidebar
           filters={filters}
           onFiltersChange={handleFiltersChange}
           isOpen={showFilters}
           onToggle={() => setShowFilters(!showFilters)}
         />
+        </div>
 
         {/* Bookings Grid */}
         <div className="flex-1 min-w-0">

@@ -1,38 +1,48 @@
-import { Link } from 'react-router-dom';
-import { Calendar, Clock, Car, DollarSign, Edit, Trash2, Star } from 'lucide-react';
+import { Link } from "react-router-dom";
+import { Calendar, Clock, Car, DollarSign, Edit, Trash2, Star } from "lucide-react";
 
 const BookingCard = ({ booking, onDelete }) => {
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
     });
   };
 
   const getStatusClass = (status) => {
-    const statusClasses = {
-      'Pending': 'status-badge status-pending',
-      'Confirmed': 'status-badge status-confirmed',
-      'Completed': 'status-badge status-completed',
-      'Cancelled': 'status-badge status-cancelled'
+    const base =
+      "px-3 py-1 rounded-full text-xs font-medium inline-flex items-center";
+    const styles = {
+      Pending: `${base} bg-yellow-100 text-yellow-700 border border-yellow-200`,
+      Confirmed: `${base} bg-blue-100 text-blue-700 border border-blue-200`,
+      Completed: `${base} bg-green-100 text-green-700 border border-green-200`,
+      Cancelled: `${base} bg-red-100 text-red-700 border border-red-200`,
     };
-    return statusClasses[status] || 'status-badge bg-gray-100 text-gray-800';
+    return styles[status] || `${base} bg-gray-100 text-gray-600 border`;
   };
 
   const renderRating = (rating) => {
     if (!rating) return null;
-    
+
     return (
       <div className="flex items-center space-x-1">
-        <Star className="h-4 w-4 text-yellow-400 fill-current" />
-        <span className="text-sm text-gray-600">{rating}/5</span>
+        {[...Array(5)].map((_, i) => (
+          <Star
+            key={i}
+            className={`h-4 w-4 ${
+              i < rating
+                ? "text-yellow-400 fill-current"
+                : "text-gray-300"
+            }`}
+          />
+        ))}
       </div>
     );
   };
 
   return (
-    <div className="card p-6 hover:shadow-lg transition-shadow duration-200">
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 p-6">
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div>
@@ -40,15 +50,16 @@ const BookingCard = ({ booking, onDelete }) => {
             {booking.customerName}
           </h3>
           <div className="flex items-center space-x-2 text-sm text-gray-600">
-            <Car className="h-4 w-4" />
+            <Car className="h-4 w-4 text-primary-500" />
             <span>
-              {booking.carDetails.year} {booking.carDetails.make} {booking.carDetails.model}
+              {booking.carDetails.year} {booking.carDetails.make}{" "}
+              {booking.carDetails.model}
             </span>
           </div>
         </div>
-        <div className={getStatusClass(booking.status)}>
+        <span className={getStatusClass(booking.status)}>
           {booking.status}
-        </div>
+        </span>
       </div>
 
       {/* Service Info */}
@@ -61,7 +72,7 @@ const BookingCard = ({ booking, onDelete }) => {
             {booking.addOns.map((addOn, index) => (
               <span
                 key={index}
-                className="inline-block px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full"
+                className="inline-block px-2 py-1 bg-primary-50 text-primary-700 text-xs rounded-full border border-primary-100"
               >
                 {addOn}
               </span>
@@ -81,12 +92,12 @@ const BookingCard = ({ booking, onDelete }) => {
           <span className="text-gray-600">{booking.timeSlot}</span>
         </div>
         <div className="flex items-center space-x-2">
-          <DollarSign className="h-4 w-4 text-gray-400" />
-          <span className="text-gray-900 font-medium">${booking.price}</span>
+          <DollarSign className="h-4 w-4 text-green-500" />
+          <span className="text-gray-900 font-semibold">
+            ${booking.price}
+          </span>
         </div>
-        <div className="flex items-center justify-end">
-          {renderRating(booking.rating)}
-        </div>
+        <div className="flex justify-end">{renderRating(booking.rating)}</div>
       </div>
 
       {/* Actions */}
@@ -97,18 +108,18 @@ const BookingCard = ({ booking, onDelete }) => {
         >
           View Details
         </Link>
-        
+
         <div className="flex items-center space-x-2">
           <Link
             to={`/edit-booking/${booking._id}`}
-            className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors"
             title="Edit booking"
           >
             <Edit className="h-4 w-4" />
           </Link>
           <button
             onClick={() => onDelete(booking._id)}
-            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            className="p-2 rounded-lg bg-red-50 hover:bg-red-100 text-red-500 hover:text-red-700 transition-colors"
             title="Delete booking"
           >
             <Trash2 className="h-4 w-4" />

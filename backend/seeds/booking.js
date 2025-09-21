@@ -1,11 +1,29 @@
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import Booking from '../models/booking.js';
-import connectDB from '../db.js';
+import mongoose from 'mongoose';
 
-dotenv.config();
+// Configure dotenv with the correct path to .env file
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
+const connect = async () => {
+  try {
+    console.log('Connecting to MongoDB...',process.env.MONGODB_URI);
+    const conn = await mongoose.connect(process.env.MONGODB_URI);
+
+    console.log(`MongoDB Connected: ${conn.connection.host}`);
+    return conn;
+  } catch (error) {
+    console.error(`Error: ${error.message}`);
+    
+    process.exit(1);
+  }
+};
 // Connect to MongoDB
-connectDB().then(() => console.log('MongoDB connected for seeding'));
+connect().then(() => console.log('MongoDB connected for seeding'));
 
 const sampleBookings = [
   {
